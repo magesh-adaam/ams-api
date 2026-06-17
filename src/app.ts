@@ -7,6 +7,8 @@ import * as dotenv from "dotenv";
 import { ensureDatabaseExists, AppDataSource } from "./config/data-source";
 import { seedDatabase } from "./utils/db-seed";
 import userRoutes from "./routes/userRoutes";
+import facilityRoutes from "./routes/facilityRoutes";
+import blockRoutes from "./routes/blockRoutes";
 
 // Load Environment Variables
 dotenv.config();
@@ -60,6 +62,8 @@ app.get("/api/dashboard/summary", (req: Request, res: Response) => {
 
 // User Routes
 app.use("/api/users", userRoutes);
+app.use("/api/facilities", facilityRoutes);
+app.use("/api/blocks", blockRoutes);
 
 // Fallback Route
 app.use((req: Request, res: Response) => {

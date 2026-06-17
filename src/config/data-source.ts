@@ -4,6 +4,8 @@ import { Client } from "pg";
 import { User } from "../entities/User";
 import { Role } from "../entities/Role";
 import { Permission } from "../entities/Permission";
+import { Facility } from "../entities/Facility";
+import { Block } from "../entities/Block";
 import * as dotenv from "dotenv";
 
 dotenv.config();
@@ -54,7 +56,7 @@ export const AppDataSource = new DataSource({
   database: dbName,
   synchronize: true, // Auto-sync entities (tables) in development
   logging: process.env.NODE_ENV === "development" ? ["error", "warn"] : false,
-  entities: [User, Role, Permission],
+  entities: [User, Role, Permission, Facility, Block],
   migrations: [],
   subscribers: [],
 });
