@@ -6,6 +6,14 @@ import { Role } from "../entities/Role";
 import { Permission } from "../entities/Permission";
 import { Facility } from "../entities/Facility";
 import { Block } from "../entities/Block";
+import { Level } from "../entities/Level";
+import { Department } from "../entities/Department";
+import { UserLocation } from "../entities/UserLocation";
+import { AssetClassification } from "../entities/AssetClassification";
+import { AssetType } from "../entities/AssetType";
+import { Asset } from "../entities/Asset";
+import { PpmChecklist } from "../entities/PpmChecklist";
+import { PpmChecklistTask } from "../entities/PpmChecklistTask";
 import * as dotenv from "dotenv";
 
 dotenv.config();
@@ -56,7 +64,7 @@ export const AppDataSource = new DataSource({
   database: dbName,
   synchronize: true, // Auto-sync entities (tables) in development
   logging: process.env.NODE_ENV === "development" ? ["error", "warn"] : false,
-  entities: [User, Role, Permission, Facility, Block],
+  entities: [User, Role, Permission, Facility, Block, Level, Department, UserLocation, AssetClassification, AssetType, Asset, PpmChecklist, PpmChecklistTask],
   migrations: [],
   subscribers: [],
 });

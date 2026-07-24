@@ -9,6 +9,15 @@ import { seedDatabase } from "./utils/db-seed";
 import userRoutes from "./routes/userRoutes";
 import facilityRoutes from "./routes/facilityRoutes";
 import blockRoutes from "./routes/blockRoutes";
+import authRoutes from "./routes/authRoutes";
+import roleRoutes from "./routes/roleRoutes";
+import levelRoutes from "./routes/levelRoutes";
+import departmentRoutes from "./routes/departmentRoutes";
+import userLocationRoutes from "./routes/userLocationRoutes";
+import assetClassificationRoutes from "./routes/assetClassificationRoutes";
+import assetTypeRoutes from "./routes/assetTypeRoutes";
+import assetRoutes from "./routes/assetRoutes";
+import ppmChecklistRoutes from "./routes/ppmChecklistRoutes";
 
 // Load Environment Variables
 dotenv.config();
@@ -61,9 +70,18 @@ app.get("/api/dashboard/summary", (req: Request, res: Response) => {
 });
 
 // User Routes
+app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/facilities", facilityRoutes);
 app.use("/api/blocks", blockRoutes);
+app.use("/api/levels", levelRoutes);
+app.use("/api/departments", departmentRoutes);
+app.use("/api/user-locations", userLocationRoutes);
+app.use("/api/asset-classifications", assetClassificationRoutes);
+app.use("/api/asset-types", assetTypeRoutes);
+app.use("/api/assets", assetRoutes);
+app.use("/api/roles", roleRoutes);
+app.use("/api/ppm-checklists", ppmChecklistRoutes);
 
 // Fallback Route
 app.use((req: Request, res: Response) => {
