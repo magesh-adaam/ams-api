@@ -29,7 +29,7 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 let startupError: any = null;
 
-// Security Middlewares
+// Security Middlewares testing
 app.use(helmet({
   crossOriginResourcePolicy: { policy: "cross-origin" },
 }));
@@ -121,9 +121,9 @@ app.use("/api/upload", uploadRoutes);
 app.get("/", (req: Request, res: Response) => {
   const env = process.env.NODE_ENV || "development";
   const routes = [
-    "/api/health", "/api/dashboard/summary", "/api/auth", "/api/users", 
-    "/api/facilities", "/api/blocks", "/api/levels", "/api/departments", 
-    "/api/user-locations", "/api/asset-classifications", "/api/asset-types", 
+    "/api/health", "/api/dashboard/summary", "/api/auth", "/api/users",
+    "/api/facilities", "/api/blocks", "/api/levels", "/api/departments",
+    "/api/user-locations", "/api/asset-classifications", "/api/asset-types",
     "/api/assets", "/api/roles", "/api/ppm-checklists", "/api/settings", "/api/upload"
   ];
 
