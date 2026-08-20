@@ -18,6 +18,9 @@ import assetClassificationRoutes from "./routes/assetClassificationRoutes";
 import assetTypeRoutes from "./routes/assetTypeRoutes";
 import assetRoutes from "./routes/assetRoutes";
 import ppmChecklistRoutes from "./routes/ppmChecklistRoutes";
+import settingsRoutes from "./routes/settingsRoutes";
+import uploadRoutes from "./routes/uploadRoutes";
+import path from "path";
 
 // Load Environment Variables
 dotenv.config();
@@ -26,7 +29,9 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 // Security Middlewares
-app.use(helmet());
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: "cross-origin" },
+}));
 app.use(
   cors({
     origin: process.env.CORS_ORIGIN || "http://localhost:3000",
@@ -40,6 +45,23 @@ app.use(morgan("dev"));
 // Body Parsing Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Serverless DB Connection Middleware
+app.use(async (req: Request, res: Response, next: express.NextFunction) => {
+  try {
+    if (!AppDataSource.isInitialized) {
+      await AppDataSource.initialize();
+      console.log("[Database] Connected successfully to PostgreSQL database (Serverless).");
+    }
+    next();
+  } catch (error) {
+    console.error("Critical: Serverless database connection failed:", error);
+    res.status(500).json({ error: "Database connection failed" });
+  }
+});
+
+// Serve Static Files (Uploads)
+app.use("/uploads", express.static(path.join(__dirname, "../public/uploads")));
 
 // Health Check Endpoint
 app.get("/api/health", (req: Request, res: Response) => {
@@ -82,6 +104,8 @@ app.use("/api/asset-types", assetTypeRoutes);
 app.use("/api/assets", assetRoutes);
 app.use("/api/roles", roleRoutes);
 app.use("/api/ppm-checklists", ppmChecklistRoutes);
+app.use("/api/settings", settingsRoutes);
+app.use("/api/upload", uploadRoutes);
 
 // Fallback Route
 app.use((req: Request, res: Response) => {
@@ -97,12 +121,14 @@ app.use((err: any, req: Request, res: Response, next: express.NextFunction) => {
   });
 });
 
-// Initialize DB and Seed before starting
+// Initialize DB and Seed before starting (Local Development Only)
 async function startServer() {
   try {
     await ensureDatabaseExists();
-    await AppDataSource.initialize();
-    console.log("[Database] Connected successfully to PostgreSQL database.");
+    if (!AppDataSource.isInitialized) {
+      await AppDataSource.initialize();
+      console.log("[Database] Connected successfully to PostgreSQL database.");
+    }
 
     await seedDatabase();
 
@@ -119,6 +145,9 @@ async function startServer() {
   }
 }
 
-startServer();
+// Only start the server if not running in a Serverless environment (like Vercel)
+if (process.env.NODE_ENV !== "production" && !process.env.VERCEL) {
+  startServer();
+}
 
 export default app;

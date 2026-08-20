@@ -78,4 +78,28 @@ export class AuthController {
       res.status(500).json({ error: "Internal Server Error", message: error.message });
     }
   }
+
+  static async requestAccess(req: Request, res: Response) {
+    try {
+      const { firstName, lastName, email, roles } = req.body;
+
+      if (!firstName || !lastName || !email || !roles || roles.length === 0) {
+        return res.status(400).json({ error: "All fields are required" });
+      }
+
+      const { EmailService } = require("../services/emailService");
+      
+      await EmailService.sendAccessRequestEmail({
+        firstName,
+        lastName,
+        email,
+        roles
+      });
+
+      res.status(200).json({ message: "Access request submitted successfully" });
+    } catch (error: any) {
+      console.error("Request Access Error:", error);
+      res.status(500).json({ error: "Internal Server Error", message: error.message });
+    }
+  }
 }

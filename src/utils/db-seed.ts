@@ -12,6 +12,7 @@ import { AssetType } from "../entities/AssetType";
 import { Asset } from "../entities/Asset";
 import { PpmChecklist } from "../entities/PpmChecklist";
 import { PpmChecklistTask } from "../entities/PpmChecklistTask";
+import { Setting } from "../entities/Setting";
 import * as bcrypt from "bcryptjs";
 
 export async function seedDatabase() {
@@ -935,6 +936,25 @@ export async function seedDatabase() {
 
         console.log(`[Seed] Seeded PPM checklist: ${listData.name}`);
       }
+    }
+  }
+
+  // 13. Seed Settings
+  const settingRepo = AppDataSource.getRepository(Setting);
+  const settingsToSeed = [
+    { key: "appName", value: "AssetIntelligence" },
+    { key: "logoUrl", value: "" }, // Will fallback to SVG if empty in UI, or use a URL if set
+    { key: "bannerUrl", value: "/mri-banner.jpg" },
+    { key: "bannerTitle", value: "Healthcare Asset Intelligence" },
+    { key: "bannerSubtitle", value: "Maximize operational efficiency and compliance across your entire medical inventory." },
+  ];
+
+  for (const s of settingsToSeed) {
+    const existing = await settingRepo.findOneBy({ key: s.key });
+    if (!existing) {
+      const newSetting = settingRepo.create(s);
+      await settingRepo.save(newSetting);
+      console.log(`[Seed] Created setting: ${s.key}`);
     }
   }
 
