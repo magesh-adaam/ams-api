@@ -58,11 +58,19 @@ export async function ensureDatabaseExists() {
 
 export const AppDataSource = new DataSource({
   type: "postgres",
-  host: dbHost,
-  port: dbPort,
-  username: dbUser,
-  password: dbPassword,
-  database: dbName,
+  ...(process.env.DATABASE_URL 
+    ? { 
+        url: process.env.DATABASE_URL,
+        ssl: { rejectUnauthorized: false } 
+      } 
+    : {
+        host: dbHost,
+        port: dbPort,
+        username: dbUser,
+        password: dbPassword,
+        database: dbName,
+      }
+  ),
   synchronize: true, // Auto-sync entities (tables) in development
   logging: process.env.NODE_ENV === "development" ? ["error", "warn"] : false,
   entities: [User, Role, Permission, Facility, Block, Level, Department, UserLocation, AssetClassification, AssetType, Asset, PpmChecklist, PpmChecklistTask, Setting],
