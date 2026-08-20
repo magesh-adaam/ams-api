@@ -27,6 +27,7 @@ dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
+let startupError: any = null;
 
 // Security Middlewares
 app.use(helmet({
@@ -107,6 +108,147 @@ app.use("/api/ppm-checklists", ppmChecklistRoutes);
 app.use("/api/settings", settingsRoutes);
 app.use("/api/upload", uploadRoutes);
 
+// Root Route - API Status Page
+app.get("/", (req: Request, res: Response) => {
+  const env = process.env.NODE_ENV || "development";
+  const routes = [
+    "/api/health", "/api/dashboard/summary", "/api/auth", "/api/users", 
+    "/api/facilities", "/api/blocks", "/api/levels", "/api/departments", 
+    "/api/user-locations", "/api/asset-classifications", "/api/asset-types", 
+    "/api/assets", "/api/roles", "/api/ppm-checklists", "/api/settings", "/api/upload"
+  ];
+
+  let statusHtml = "";
+  if (startupError) {
+    statusHtml = `
+      <div class="status-container error-border">
+        <div class="dot error-dot"></div>
+        <div class="text error-text">API Status: OFFLINE</div>
+      </div>
+      <div class="error-box">
+        <strong>Database Connection Error:</strong><br/>
+        ${startupError.message || startupError}
+      </div>
+    `;
+  } else {
+    statusHtml = `
+      <div class="status-container">
+        <div class="dot"></div>
+        <div class="text">API Status: HEALTHY (${env})</div>
+      </div>
+      <div class="routes-container">
+        <h3>Available API Routes</h3>
+        <ul>
+          ${routes.map(r => `<li><a href="${r}">${r}</a></li>`).join("")}
+        </ul>
+      </div>
+    `;
+  }
+
+  res.send(`
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>API Status</title>
+      <style>
+        body {
+          margin: 0;
+          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          min-height: 100vh;
+          background-color: #f8fafc;
+          padding: 20px;
+        }
+        .container {
+          display: flex;
+          flex-direction: column;
+          gap: 20px;
+          max-width: 600px;
+          width: 100%;
+        }
+        .status-container {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          background: white;
+          padding: 16px 24px;
+          border-radius: 12px;
+          box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+          border: 1px solid #e2e8f0;
+        }
+        .error-border { border-color: #fca5a5; }
+        .dot {
+          width: 14px;
+          height: 14px;
+          background-color: #22c55e;
+          border-radius: 50%;
+          box-shadow: 0 0 8px rgba(34,197,94,0.6);
+        }
+        .error-dot {
+          background-color: #ef4444;
+          box-shadow: 0 0 8px rgba(239,68,68,0.6);
+        }
+        .text {
+          color: #16a34a;
+          font-weight: 600;
+          font-size: 18px;
+        }
+        .error-text { color: #dc2626; }
+        .error-box {
+          background: #fef2f2;
+          border: 1px solid #fecaca;
+          padding: 16px;
+          border-radius: 8px;
+          color: #991b1b;
+          font-family: monospace;
+          white-space: pre-wrap;
+          word-break: break-all;
+        }
+        .routes-container {
+          background: white;
+          padding: 24px;
+          border-radius: 12px;
+          box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+          border: 1px solid #e2e8f0;
+        }
+        .routes-container h3 {
+          margin-top: 0;
+          color: #334155;
+          font-size: 16px;
+          border-bottom: 1px solid #e2e8f0;
+          padding-bottom: 12px;
+        }
+        .routes-container ul {
+          list-style: none;
+          padding: 0;
+          margin: 0;
+          display: grid;
+          grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+          gap: 8px;
+        }
+        .routes-container li a {
+          color: #3b82f6;
+          text-decoration: none;
+          font-size: 14px;
+        }
+        .routes-container li a:hover {
+          text-decoration: underline;
+        }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        ${statusHtml}
+      </div>
+    </body>
+    </html>
+  `);
+});
+
 // Fallback Route
 app.use((req: Request, res: Response) => {
   res.status(404).json({ error: "Route not found" });
@@ -123,6 +265,15 @@ app.use((err: any, req: Request, res: Response, next: express.NextFunction) => {
 
 // Initialize DB and Seed before starting (Local Development Only)
 async function startServer() {
+  // Start server first so it can serve the status page even if DB connection fails
+  app.listen(PORT, () => {
+    console.log(`=========================================`);
+    console.log(`  CAFMS Backend Server Running Locally   `);
+    console.log(`  URL: http://localhost:${PORT}          `);
+    console.log(`  Environment: ${process.env.NODE_ENV || "development"} `);
+    console.log(`=========================================`);
+  });
+
   try {
     await ensureDatabaseExists();
     if (!AppDataSource.isInitialized) {
@@ -131,17 +282,11 @@ async function startServer() {
     }
 
     await seedDatabase();
-
-    app.listen(PORT, () => {
-      console.log(`=========================================`);
-      console.log(`  CAFMS Backend Server Running Locally   `);
-      console.log(`  URL: http://localhost:${PORT}          `);
-      console.log(`  Environment: ${process.env.NODE_ENV || "development"} `);
-      console.log(`=========================================`);
-    });
-  } catch (error) {
+  } catch (error: any) {
     console.error("Critical: Server initialization failed:", error);
-    process.exit(1);
+    startupError = error;
+    // We intentionally do not process.exit(1) here so the Express server stays running
+    // to display the error on the root page.
   }
 }
 
