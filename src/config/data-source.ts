@@ -25,6 +25,11 @@ const dbUser = process.env.DB_USER || "postgres";
 const dbPassword = process.env.DB_PASSWORD || "postgres";
 const dbName = process.env.DB_NAME || "cafms";
 
+console.log("[DEBUG-ENV] NODE_ENV:", process.env.NODE_ENV);
+console.log("[DEBUG-ENV] VERCEL:", process.env.VERCEL);
+console.log("[DEBUG-ENV] DATABASE_URL is set?", !!process.env.DATABASE_URL);
+console.log("[DEBUG-ENV] DB_HOST is set?", !!process.env.DB_HOST);
+
 export async function ensureDatabaseExists() {
   const client = new Client({
     host: dbHost,
