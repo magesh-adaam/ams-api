@@ -24,7 +24,7 @@ const dbPort = parseInt(process.env.DB_PORT || "5432", 10);
 const dbUser = process.env.DB_USER || "postgres";
 const dbPassword = process.env.DB_PASSWORD || "postgres";
 const dbName = process.env.DB_NAME || "cafms";
-//logs
+//logs changed port
 console.log("[DEBUG-ENV] NODE_ENV:", process.env.NODE_ENV);
 console.log("[DEBUG-ENV] VERCEL:", process.env.VERCEL);
 console.log("[DEBUG-ENV] DATABASE_URL is set?", !!process.env.DATABASE_URL);
