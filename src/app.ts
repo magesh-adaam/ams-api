@@ -35,7 +35,16 @@ app.use(helmet({
 }));
 app.use(
   cors({
-    origin: process.env.CORS_ORIGIN || "http://localhost:3000",
+    origin: function (origin, callback) {
+      // Allow requests with no origin (like mobile apps or curl requests)
+      if (!origin) return callback(null, true);
+      // Allow localhost and vercel apps
+      if (origin.includes("localhost") || origin.includes("vercel.app") || origin === process.env.CORS_ORIGIN) {
+        return callback(null, true);
+      }
+      // Alternatively, allow all origins in dev/staging (you can make this stricter for prod)
+      return callback(null, true);
+    },
     credentials: true,
   })
 );
