@@ -24,7 +24,7 @@ const dbPort = parseInt(process.env.DB_PORT || "5432", 10);
 const dbUser = process.env.DB_USER || "postgres";
 const dbPassword = process.env.DB_PASSWORD || "postgres";
 const dbName = process.env.DB_NAME || "cafms";
-
+//logs
 console.log("[DEBUG-ENV] NODE_ENV:", process.env.NODE_ENV);
 console.log("[DEBUG-ENV] VERCEL:", process.env.VERCEL);
 console.log("[DEBUG-ENV] DATABASE_URL is set?", !!process.env.DATABASE_URL);
@@ -63,18 +63,18 @@ export async function ensureDatabaseExists() {
 
 export const AppDataSource = new DataSource({
   type: "postgres",
-  ...(process.env.DATABASE_URL 
-    ? { 
-        url: process.env.DATABASE_URL,
-        ssl: { rejectUnauthorized: false } 
-      } 
+  ...(process.env.DATABASE_URL
+    ? {
+      url: process.env.DATABASE_URL,
+      ssl: { rejectUnauthorized: false }
+    }
     : {
-        host: dbHost,
-        port: dbPort,
-        username: dbUser,
-        password: dbPassword,
-        database: dbName,
-      }
+      host: dbHost,
+      port: dbPort,
+      username: dbUser,
+      password: dbPassword,
+      database: dbName,
+    }
   ),
   synchronize: true, // Auto-sync entities (tables) in development
   logging: process.env.NODE_ENV === "development" ? ["error", "warn"] : false,
